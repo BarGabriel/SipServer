@@ -9,17 +9,6 @@ SipMessage::SipMessage(std::string message, sockaddr_in src) : _messageStr(std::
 	parse();
 }
 
-//SipMessage::SipMessage(const SipMessage& message) :
-//	_header(message.getHeader()), _via(message.getVia()),
-//	_from(message.getFrom()), _fromNumber(message.getFromNumber()),
-//	_to(message.getTo()), _toNumber(message.getToNumber()),
-//	_callID(message.getCallID()), _cSeq(message.getCSeq()),
-//	_contact(message.getContact()), _contactNumber(message.getContactNumber()),
-//	_contentLength(message.getContentLength()),
-//	_type(message.getType()), _messageStr(message.toString())
-//{
-//}
-
 void SipMessage::parse()
 {
 	std::string msg = _messageStr;

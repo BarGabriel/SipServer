@@ -21,9 +21,9 @@ int main(int argc, char** argv)
 
 	try
 	{
-		const std::string ip = result["ip"].as<std::string>();
-		const int port = result["port"].as<int>();
-		SipServer server("10.0.0.10");
+		std::string ip = result["ip"].as<std::string>();
+		int port = result["port"].as<int>();
+		SipServer server(std::move(ip), port);
 		std::cout << "Server has been started. Listening..." << std::endl;
 		getchar();		
 	}

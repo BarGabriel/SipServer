@@ -83,7 +83,7 @@ void RequestsHandler::OnSubscribe(std::shared_ptr<SipMessage> data)
 	okResponse << "SIP/2.0 200 OK\r\n"
 		<< data->getVia() << ";received=" + _serverIp << "\r\n"
 		<< data->getFrom() << "\r\n"
-		<< data->getTo() << ";tag=" << IDGen::GenerateID(9) << "\r\n"//generete tag
+		<< data->getTo() << ";tag=" << IDGen::GenerateID(9) << "\r\n"
 		<< data->getCallID() << "\r\n"
 		<< data->getCSeq() << "\r\n"
 		<< data->getContact() << "\r\n"

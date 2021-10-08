@@ -1,7 +1,7 @@
 #include "Session.hpp"
 
 Session::Session(std::string callID, SipClient src, size_t srcRtpPort) :
-	_callID(std::move(callID)), _src(src), _state(State::Invited), _srcRtpPort(srcRtpPort)
+	_callID(std::move(callID)), _src(src), _state(State::Invited), _srcRtpPort(srcRtpPort), _destRtpPort(0)
 {
 }
 
