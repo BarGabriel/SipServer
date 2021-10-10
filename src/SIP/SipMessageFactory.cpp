@@ -4,7 +4,7 @@ std::optional<std::shared_ptr<SipMessage>> SipMessageFactory::createMessage(std:
 {
 	try
 	{
-		if (message.find("application/sdp") != std::string::npos)
+		if (containsSdp(message))
 		{
 			return std::make_shared<SipSdpMessage>(std::move(message), std::move(src));
 		}
@@ -15,4 +15,9 @@ std::optional<std::shared_ptr<SipMessage>> SipMessageFactory::createMessage(std:
 	{
 		return {};
 	}
+}
+
+bool SipMessageFactory::containsSdp(const std::string& message) const
+{
+	return message.find(SDP_CONTENT_TYPE) != std::string::npos;
 }
