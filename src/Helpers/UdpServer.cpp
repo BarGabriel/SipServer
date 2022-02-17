@@ -3,7 +3,7 @@
 #include <vector>
 #include <thread>
 
-UdpServer::UdpServer(std::string ip, int port, OnNewMessageEvent event) : _ip(std::move(ip)), _port(port), _onNewMessageEvent(event)
+UdpServer::UdpServer(std::string ip, int port, OnNewMessageEvent event) : _ip(std::move(ip)), _port(port), _onNewMessageEvent(event), _keepRunning(false)
 {
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -31,19 +31,19 @@ UdpServer::UdpServer(std::string ip, int port, OnNewMessageEvent event) : _ip(st
 
 void UdpServer::startReceive()
 {
-	std::thread([&]
+	_keepRunning = true;
+	std::thread([=]
 		{
 			char buffer[BUFFER_SIZE];
-			sockaddr_in cliaddr;
-			memset(&cliaddr, 0, sizeof(cliaddr));
-			int len = sizeof(cliaddr);
+			sockaddr_in senderEndPoint;
+			memset(&senderEndPoint, 0, sizeof(senderEndPoint));
+			int len = sizeof(senderEndPoint);
 
-			while (true)
+			while (_keepRunning)
 			{
-				recvfrom(_sockfd, buffer, BUFFER_SIZE, 0, reinterpret_cast<struct sockaddr*>(&cliaddr), &len);
-				_onNewMessageEvent(buffer, cliaddr);
+				recvfrom(_sockfd, buffer, BUFFER_SIZE, 0, reinterpret_cast<struct sockaddr*>(&senderEndPoint), &len);
+				_onNewMessageEvent(std::move(buffer), senderEndPoint);
 			}
-
 		}).detach();
 }
 
@@ -51,4 +51,11 @@ int UdpServer::send(sockaddr_in address, std::string buffer)
 {
 	return sendto(_sockfd, buffer.c_str(), strlen(buffer.c_str()),
 		0, reinterpret_cast<const struct sockaddr*>(&address), sizeof(address));
+}
+
+void UdpServer::close()
+{
+	_keepRunning = false;
+	shutdown(_sockfd, 2);
+	closesocket(_sockfd);
 }

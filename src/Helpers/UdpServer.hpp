@@ -15,6 +15,7 @@ public:
 
 	void startReceive();
 	int send(struct sockaddr_in address, std::string buffer);
+	void close();
 
 private:
 	std::string _ip;
@@ -22,6 +23,7 @@ private:
 	int _sockfd;
 	sockaddr_in _servaddr;
 	OnNewMessageEvent _onNewMessageEvent;
+	std::atomic<bool> _keepRunning;
 };
 
 #endif

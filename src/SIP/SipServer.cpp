@@ -11,6 +11,11 @@ SipServer::SipServer(std::string ip, int port) :
 	_socket.startReceive();
 }
 
+void SipServer::close()
+{
+	_socket.close();
+}
+
 void SipServer::onNewMessage(std::string data, sockaddr_in src)
 {
 	auto message = _messagesFactory.createMessage(std::move(data), std::move(src));
