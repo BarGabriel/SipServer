@@ -26,7 +26,6 @@ int main(int argc, char** argv)
 		SipServer server(std::move(ip), port);
 		std::cout << "Server has been started. Listening..." << std::endl;
 		getchar();
-		server.close();
 	}
 	catch (const cxxopts::OptionException&)
 	{

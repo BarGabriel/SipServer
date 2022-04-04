@@ -29,10 +29,15 @@ UdpServer::UdpServer(std::string ip, int port, OnNewMessageEvent event) : _ip(st
 	}
 }
 
+UdpServer::~UdpServer()
+{
+	close();
+}
+
 void UdpServer::startReceive()
 {
 	_keepRunning = true;
-	std::thread([=]
+	_receiverThread = std::thread([=]
 		{
 			char buffer[BUFFER_SIZE];
 			sockaddr_in senderEndPoint;
@@ -44,7 +49,7 @@ void UdpServer::startReceive()
 				recvfrom(_sockfd, buffer, BUFFER_SIZE, 0, reinterpret_cast<struct sockaddr*>(&senderEndPoint), &len);
 				_onNewMessageEvent(std::move(buffer), senderEndPoint);
 			}
-		}).detach();
+		});
 }
 
 int UdpServer::send(sockaddr_in address, std::string buffer)
@@ -58,4 +63,5 @@ void UdpServer::close()
 	_keepRunning = false;
 	shutdown(_sockfd, 2);
 	closesocket(_sockfd);
+	_receiverThread.join();
 }

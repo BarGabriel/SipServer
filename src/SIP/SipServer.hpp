@@ -10,10 +10,8 @@ class SipServer
 {
 public:
 	SipServer(std::string ip, int port = 5060);
-	void close();
 
 private:
-
 	void onNewMessage(std::string data, sockaddr_in src);
 	void onNewClient(SipClient newClient);
 	void onUnregister(SipClient client);

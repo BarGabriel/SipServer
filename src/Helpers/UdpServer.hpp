@@ -4,6 +4,7 @@
 #include <WinSock2.h>
 #include <iostream>
 #include <functional>
+#include <thread>
 
 class UdpServer
 {
@@ -12,18 +13,21 @@ public:
 	static constexpr int BUFFER_SIZE = 2048;
 
 	UdpServer(std::string ip ,int port, OnNewMessageEvent event);
+	~UdpServer();
 
 	void startReceive();
 	int send(struct sockaddr_in address, std::string buffer);
-	void close();
 
 private:
+	void close();
+
 	std::string _ip;
 	int _port;
 	int _sockfd;
 	sockaddr_in _servaddr;
 	OnNewMessageEvent _onNewMessageEvent;
 	std::atomic<bool> _keepRunning;
+	std::thread _receiverThread;
 };
 
 #endif
