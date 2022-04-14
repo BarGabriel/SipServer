@@ -12,12 +12,9 @@ class RequestsHandler
 {
 public:	
 
-	using OnHandledEvent = std::function<void(std::string, std::shared_ptr<SipMessage>)>;
+	using OnHandledEvent = std::function<void(const sockaddr_in&, std::shared_ptr<SipMessage>)>;
 
-	RequestsHandler(std::string serverIp, int serverPort, std::unordered_map<std::string, std::shared_ptr<Session>>& sessions,
-		std::unordered_map<std::string, std::shared_ptr<SipClient>>& clients,
-		std::function<void(std::shared_ptr<SipClient>)> onNewClientEvent,
-		std::function<void(std::shared_ptr<SipClient>)> onUnregisterEvent,
+	RequestsHandler(std::string serverIp, int serverPort,
 		OnHandledEvent onHandledEvent);
 
 	void handle(std::shared_ptr<SipMessage> request);
@@ -43,11 +40,16 @@ private:
 	bool setCallState(const std::string& callID, Session::State state);
 	void endCall(const std::string& callID, const std::string& srcNumber, const std::string& destNumber, const std::string& reason = "");
 
-	std::optional<std::shared_ptr<SipClient>> findClient(std::string number);
+	bool registerClient(std::shared_ptr<SipClient> client);
+	void unregisterClient(std::shared_ptr<SipClient> client);
+
+	std::optional<std::shared_ptr<SipClient>> findClient(const std::string& number);
+
+	void endHandle(const std::string& destNumber, std::shared_ptr<SipMessage> message);
 
 	std::unordered_map<std::string, std::function<void(std::shared_ptr<SipMessage> request)>> _handlers;
-	std::unordered_map<std::string, std::shared_ptr<Session>>& _sessions;
-	std::unordered_map<std::string, std::shared_ptr<SipClient>>& _clients;
+	std::unordered_map<std::string, std::shared_ptr<Session>> _sessions;
+	std::unordered_map<std::string, std::shared_ptr<SipClient>> _clients;
 
 	std::function<void(std::shared_ptr<SipClient>)> _onNewClient;
 	std::function<void(std::shared_ptr<SipClient>)> _onUnregister;
