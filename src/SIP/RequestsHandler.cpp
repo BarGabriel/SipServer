@@ -84,7 +84,7 @@ void RequestsHandler::OnSubscribe(std::shared_ptr<SipMessage> data)
 		<< data->getContentLength() << "\r\n"
 		<< "\r\n";
 
-	auto response = std::make_shared<SipMessage>(SipMessage(okResponse.str(), data->getSource()));
+	auto response = std::make_shared<SipMessage>(okResponse.str(), data->getSource());
 	endHandle(data->getFromNumber(), std::move(response));
 }
 

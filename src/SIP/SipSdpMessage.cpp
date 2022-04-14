@@ -18,7 +18,7 @@ void SipSdpMessage::setRtpPort(int port)
 {
 	std::string currentRtpPort = std::to_string(_rtpPort);
 	std::string copyM = _media;
-	copyM.replace(_media.find(currentRtpPort), currentRtpPort.length() ,std::to_string(port));
+	copyM.replace(_media.find(currentRtpPort), currentRtpPort.length(), std::to_string(port));
 	_rtpPort = port;
 	setMedia(std::move(copyM));
 }

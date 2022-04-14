@@ -18,7 +18,7 @@ public:
 
 
 	Session(std::string callID, std::shared_ptr<SipClient> src, uint32_t srcRtpPort);
-	
+
 	void setState(State state);
 	void setDest(std::shared_ptr<SipClient> dest, uint32_t destRtpPort);
 

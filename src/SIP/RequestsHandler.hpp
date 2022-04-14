@@ -8,9 +8,9 @@
 #include "SipClient.hpp"
 #include "Session.hpp"
 
-class RequestsHandler 
+class RequestsHandler
 {
-public:	
+public:
 
 	using OnHandledEvent = std::function<void(const sockaddr_in&, std::shared_ptr<SipMessage>)>;
 
@@ -18,7 +18,7 @@ public:
 		OnHandledEvent onHandledEvent);
 
 	void handle(std::shared_ptr<SipMessage> request);
-	
+
 	std::optional<std::shared_ptr<Session>> getSession(const std::string& callID);
 
 private:

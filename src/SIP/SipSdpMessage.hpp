@@ -18,7 +18,6 @@ public:
 	std::string getTime() const;
 	std::string getMedia() const;
 	int getRtpPort() const;
-	
 
 private:
 	void parse() override;

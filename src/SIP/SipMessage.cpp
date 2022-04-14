@@ -12,7 +12,7 @@ SipMessage::SipMessage(std::string message, sockaddr_in src) : _messageStr(std::
 void SipMessage::parse()
 {
 	std::string msg = _messageStr;
-	
+
 	size_t pos = msg.find(SipMessageHeaders::HEADERS_DELIMETER);
 	_header = msg.substr(0, pos);
 	msg.erase(0, pos + strlen(SipMessageHeaders::HEADERS_DELIMETER));
@@ -68,12 +68,12 @@ void SipMessage::parse()
 
 bool SipMessage::isValidMessage() const
 {
-	if (_via.empty() || _to.empty() || _from.empty() || _callID.empty() || _cSeq.empty()) 
+	if (_via.empty() || _to.empty() || _from.empty() || _callID.empty() || _cSeq.empty())
 	{
 		return false;
 	}
 
-	if ((_type == SipMessageTypes::INVITE || _type == SipMessageTypes::REGISTER) && _contact.empty()) 
+	if ((_type == SipMessageTypes::INVITE || _type == SipMessageTypes::REGISTER) && _contact.empty())
 	{
 		return false;
 	}
