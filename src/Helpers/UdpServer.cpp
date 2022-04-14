@@ -37,7 +37,7 @@ UdpServer::~UdpServer()
 void UdpServer::startReceive()
 {
 	_keepRunning = true;
-	_receiverThread = std::thread([=]
+	_receiverThread = std::thread([=]()
 		{
 			char buffer[BUFFER_SIZE];
 			sockaddr_in senderEndPoint;
@@ -47,10 +47,8 @@ void UdpServer::startReceive()
 			while (_keepRunning)
 			{
 				recvfrom(_sockfd, buffer, BUFFER_SIZE, 0, reinterpret_cast<struct sockaddr*>(&senderEndPoint), &len);
-				if (_keepRunning) 
-				{
-					_onNewMessageEvent(std::move(buffer), senderEndPoint);
-				}				
+				if (!_keepRunning) return;
+				_onNewMessageEvent(std::move(buffer), senderEndPoint);
 			}
 		});
 }

@@ -7,7 +7,7 @@
 class SipMessage
 {
 public:
-	
+
 	SipMessage(std::string message, sockaddr_in src);
 
 	void setType(std::string value);

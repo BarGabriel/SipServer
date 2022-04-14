@@ -12,7 +12,7 @@ public:
 	using OnNewMessageEvent = std::function<void(std::string, sockaddr_in)>;
 	static constexpr int BUFFER_SIZE = 2048;
 
-	UdpServer(std::string ip ,int port, OnNewMessageEvent event);
+	UdpServer(std::string ip, int port, OnNewMessageEvent event);
 	~UdpServer();
 
 	void startReceive();

@@ -1,6 +1,6 @@
 #include "Session.hpp"
 
-Session::Session(std::string callID, SipClient src, size_t srcRtpPort) :
+Session::Session(std::string callID, std::shared_ptr<SipClient> src, uint32_t srcRtpPort) :
 	_callID(std::move(callID)), _src(src), _state(State::Invited), _srcRtpPort(srcRtpPort), _destRtpPort(0)
 {
 }
@@ -13,11 +13,11 @@ void Session::setState(State state)
 	std::cout << "New Session state: " << static_cast<int>(_state) << std::endl;
 	if (state == State::Connected)
 	{
-		std::cout << "Session Created between " << _src.getNumber() << " and " << _dest.getNumber() << std::endl;		
+		std::cout << "Session Created between " << _src->getNumber() << " and " << _dest->getNumber() << std::endl;
 	}
 }
 
-void Session::setDest(SipClient dest, size_t destRtpPort)
+void Session::setDest(std::shared_ptr<SipClient> dest, uint32_t destRtpPort)
 {
 	_dest = dest;
 	_destRtpPort = destRtpPort;
@@ -28,12 +28,12 @@ std::string Session::getCallID() const
 	return _callID;
 }
 
-SipClient Session::getSrc() const
+std::shared_ptr<SipClient> Session::getSrc() const
 {
 	return _src;
 }
 
-SipClient Session::getDest() const
+std::shared_ptr<SipClient> Session::getDest() const
 {
 	return _dest;
 }

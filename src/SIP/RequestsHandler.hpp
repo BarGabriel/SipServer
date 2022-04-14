@@ -8,20 +8,18 @@
 #include "SipClient.hpp"
 #include "Session.hpp"
 
-class RequestsHandler 
+class RequestsHandler
 {
-public:	
+public:
 
-	using OnHandledEvent = std::function<void(std::string, std::shared_ptr<SipMessage>)>;
+	using OnHandledEvent = std::function<void(const sockaddr_in&, std::shared_ptr<SipMessage>)>;
 
-	RequestsHandler(std::string serverIp, int serverPort, std::unordered_map<std::string, Session>& sessions, 
-		std::function<void(SipClient)> onNewClientEvent,
-		std::function<void(SipClient)> onUnregisterEvent,
+	RequestsHandler(std::string serverIp, int serverPort,
 		OnHandledEvent onHandledEvent);
 
 	void handle(std::shared_ptr<SipMessage> request);
-	
-	std::optional<std::reference_wrapper<Session>> getSession(const std::string& callID) const;
+
+	std::optional<std::shared_ptr<Session>> getSession(const std::string& callID);
 
 private:
 	void initHandlers();
@@ -42,11 +40,19 @@ private:
 	bool setCallState(const std::string& callID, Session::State state);
 	void endCall(const std::string& callID, const std::string& srcNumber, const std::string& destNumber, const std::string& reason = "");
 
-	std::unordered_map<std::string, std::function<void(std::shared_ptr<SipMessage> request)>> _handlers;
-	std::unordered_map<std::string, Session>& _sessions;
+	bool registerClient(std::shared_ptr<SipClient> client);
+	void unregisterClient(std::shared_ptr<SipClient> client);
 
-	std::function<void(SipClient)> _onNewClient;
-	std::function<void(SipClient)> _onUnregister;
+	std::optional<std::shared_ptr<SipClient>> findClient(const std::string& number);
+
+	void endHandle(const std::string& destNumber, std::shared_ptr<SipMessage> message);
+
+	std::unordered_map<std::string, std::function<void(std::shared_ptr<SipMessage> request)>> _handlers;
+	std::unordered_map<std::string, std::shared_ptr<Session>> _sessions;
+	std::unordered_map<std::string, std::shared_ptr<SipClient>> _clients;
+
+	std::function<void(std::shared_ptr<SipClient>)> _onNewClient;
+	std::function<void(std::shared_ptr<SipClient>)> _onUnregister;
 	OnHandledEvent _onHandled;
 
 	std::string _serverIp;
