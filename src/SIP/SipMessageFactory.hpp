@@ -2,6 +2,7 @@
 #define SIP_MESSAGE_FACTORY_HPP
 
 #include <optional>
+#include <memory>
 #include "SipSdpMessage.hpp"
 
 class SipMessageFactory
