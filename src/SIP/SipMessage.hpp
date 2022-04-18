@@ -2,9 +2,6 @@
 #define SIP_MESSAGE_HPP
 
 #ifdef __linux__
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #include <netinet/in.h>
 #elif defined _WIN32 || defined _WIN64
 #include <WinSock2.h>

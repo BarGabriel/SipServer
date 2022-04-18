@@ -1,9 +1,7 @@
 #ifndef UDP_SERVER_HPP
 #define UDP_SERVER_HPP
 
-#ifdef TARGET_OS_MAC
-#error "Unsupported platform."
-#elif defined __linux__
+#ifdef  __linux__
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
