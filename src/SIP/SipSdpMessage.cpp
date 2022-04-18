@@ -1,6 +1,7 @@
 #include "SipSdpMessage.hpp"
 #include "SipMessageHeaders.h"
 #include <string>
+#include <cstring>
 
 SipSdpMessage::SipSdpMessage(std::string message, sockaddr_in src) : SipMessage(std::move(message), std::move(src))
 {
@@ -93,7 +94,7 @@ void SipSdpMessage::parse()
 			_media = line;
 			_rtpPort = extractRtpPort(std::move(line));
 		}
-		msg.erase(0, pos + strlen(SipMessageHeaders::HEADERS_DELIMETER));
+		msg.erase(0, pos + std::strlen(SipMessageHeaders::HEADERS_DELIMETER));
 	}
 }
 

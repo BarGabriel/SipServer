@@ -1,7 +1,12 @@
 #ifndef SIP_MESSAGE_HPP
 #define SIP_MESSAGE_HPP
 
+#ifdef __linux__
+#include <netinet/in.h>
+#elif defined _WIN32 || defined _WIN64
 #include <WinSock2.h>
+#endif
+
 #include <iostream>
 
 class SipMessage

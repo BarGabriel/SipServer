@@ -3,6 +3,7 @@
 #include "SipMessageHeaders.h"
 #include <vector>
 #include <string>
+#include <cstring>
 
 SipMessage::SipMessage(std::string message, sockaddr_in src) : _messageStr(std::move(message)), _src(std::move(src))
 {
@@ -15,7 +16,7 @@ void SipMessage::parse()
 
 	size_t pos = msg.find(SipMessageHeaders::HEADERS_DELIMETER);
 	_header = msg.substr(0, pos);
-	msg.erase(0, pos + strlen(SipMessageHeaders::HEADERS_DELIMETER));
+	msg.erase(0, pos + std::strlen(SipMessageHeaders::HEADERS_DELIMETER));
 
 	_type = _header.substr(0, _header.find(" "));
 	if (_type == "SIP/2.0")
@@ -58,11 +59,11 @@ void SipMessage::parse()
 			_contentLength = line;
 		}
 
-		msg.erase(0, pos + strlen(SipMessageHeaders::HEADERS_DELIMETER));
+		msg.erase(0, pos + std::strlen(SipMessageHeaders::HEADERS_DELIMETER));
 	}
 	if (!isValidMessage())
 	{
-		throw std::exception("Invalid message.");
+		throw std::runtime_error("Invalid message.");
 	}
 }
 

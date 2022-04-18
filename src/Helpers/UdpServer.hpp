@@ -1,8 +1,18 @@
 #ifndef UDP_SERVER_HPP
 #define UDP_SERVER_HPP
 
+#ifdef  __linux__
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#elif defined _WIN32 || defined _WIN64
 #include <WinSock2.h>
+#endif
+
 #include <iostream>
+#include <atomic>
 #include <functional>
 #include <thread>
 
@@ -19,7 +29,7 @@ public:
 	int send(struct sockaddr_in address, std::string buffer);
 
 private:
-	void close();
+	void closeServer();
 
 	std::string _ip;
 	int _port;
