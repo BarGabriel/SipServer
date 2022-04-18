@@ -27,9 +27,17 @@ Using Visual Studio command prompt
   cmake ..
   msbuild SipServer.sln
 ```
+
+#### Linux 
+
+```bash
+  mkdir build && cd build
+  cmake ..
+  make
+```
 # Program options
-`--ip`: The sip server ip.  
-`--port`: The sip server port. The default value is 5060.  
+`--ip=` The sip server ip.  
+`--port=` The sip server port. The default value is 5060.  
 
 # Usage Guide
 1. Download a softphone software like [Zoiper](https://www.zoiper.com/en/voip-softphone/download/current), [Express Talk](https://www.nch.com.au/talk/index.html) or any other software.
