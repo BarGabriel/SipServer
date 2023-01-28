@@ -1,6 +1,8 @@
 #ifndef SESSION_HPP
 #define SESSION_HPP
 
+#include <memory>
+
 #include "SipClient.hpp"
 #include "UdpServer.hpp"
 
