@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "SipClient.hpp"
-#include "UdpServer.hpp"
 
 class Session
 {
@@ -27,6 +26,7 @@ public:
 	std::string getCallID() const;
 	std::shared_ptr<SipClient> getSrc() const;
 	std::shared_ptr<SipClient> getDest() const;
+	State getState() const;
 
 private:
 	std::string _callID;

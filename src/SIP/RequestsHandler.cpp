@@ -101,14 +101,30 @@ void RequestsHandler::onReqTerminated(std::shared_ptr<SipMessage> data)
 
 void RequestsHandler::OnInvite(std::shared_ptr<SipMessage> data)
 {
+	// Check if the caller is registered
+	auto caller = findClient(data->getFromNumber());
+	if (!caller.has_value()) 
+	{
+		return;
+	}
+
+	// Check if the called is registered
+	auto called = findClient(data->getToNumber());
+	if (!called.has_value())
+	{
+		// Send "SIP/2.0 404 Not Found"
+		data->setHeader(SipMessageTypes::NOT_FOUND);
+		data->setContact("Contact: <sip:" + caller.value()->getNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
+		endHandle(data->getFromNumber(), data);
+		return;
+	}
+
 	auto messge = dynamic_cast<SipSdpMessage*>(data.get());
-	auto client = findClient(data->getFromNumber());
-	if (!client.has_value()) return;
-	auto newSession = std::make_shared<Session>(data->getCallID(), client.value(), messge->getRtpPort());
+	auto newSession = std::make_shared<Session>(data->getCallID(), caller.value(), messge->getRtpPort());
 	_sessions.emplace(data->getCallID(), newSession);
 
 	auto response = data;
-	response->setContact("Contact: <sip:" + client.value()->getNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
+	response->setContact("Contact: <sip:" + caller.value()->getNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
 	endHandle(data->getToNumber(), response);
 }
 
@@ -164,7 +180,16 @@ void RequestsHandler::OnOk(std::shared_ptr<SipMessage> data)
 
 void RequestsHandler::OnAck(std::shared_ptr<SipMessage> data)
 {
-	endHandle(data->getToNumber(), data);
+	auto session = getSession(data->getCallID());
+	if (!session.has_value()) 
+	{
+		return;
+	}
+
+	if (session.value()->getState() == Session::State::Connected)
+	{
+		endHandle(data->getToNumber(), data);
+	}	
 }
 
 bool RequestsHandler::setCallState(const std::string& callID, Session::State state)
@@ -221,7 +246,7 @@ std::optional<std::shared_ptr<SipClient>> RequestsHandler::findClient(const std:
 }
 
 void RequestsHandler::endHandle(const std::string& destNumber, std::shared_ptr<SipMessage> message)
-{
+{	
 	auto destClient = findClient(destNumber);
 	if (destClient.has_value())
 	{

@@ -37,3 +37,8 @@ std::shared_ptr<SipClient> Session::getDest() const
 {
 	return _dest;
 }
+
+Session::State Session::getState() const
+{
+	return _state;
+}
