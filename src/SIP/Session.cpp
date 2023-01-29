@@ -10,7 +10,6 @@ void Session::setState(State state)
 	if (state == _state)
 		return;
 	_state = state;
-	std::cout << "New Session state: " << static_cast<int>(_state) << std::endl;
 	if (state == State::Connected)
 	{
 		std::cout << "Session Created between " << _src->getNumber() << " and " << _dest->getNumber() << std::endl;
