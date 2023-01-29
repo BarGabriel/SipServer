@@ -189,18 +189,21 @@ void RequestsHandler::OnAck(std::shared_ptr<SipMessage> data)
 	{
 		endReason = data->getToNumber() + " is busy.";
 		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+		return;
 	}
 
 	if (sessionState == Session::State::Unavailable)
 	{
 		endReason = data->getToNumber() + " is unavailable.";
 		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+		return;
 	}
 
 	if (sessionState == Session::State::Cancel)
 	{
 		endReason = data->getFromNumber() + " canceled the session.";
 		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+		return;
 	}
 }
 
