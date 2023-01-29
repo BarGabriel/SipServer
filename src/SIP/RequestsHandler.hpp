@@ -25,7 +25,6 @@ private:
 	void initHandlers();
 
 	void OnRegister(std::shared_ptr<SipMessage> data);
-	void OnSubscribe(std::shared_ptr<SipMessage> data);
 	void OnCancel(std::shared_ptr<SipMessage> data);
 	void onReqTerminated(std::shared_ptr<SipMessage> data);
 	void OnInvite(std::shared_ptr<SipMessage> data);

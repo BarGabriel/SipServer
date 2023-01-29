@@ -12,9 +12,11 @@ public:
 	enum class State
 	{
 		Invited,
-		Trying,
-		Ringing,
-		Connected
+		Busy,
+		Unavailable,
+		Cancel,
+		Bye,
+		Connected,
 	};
 
 

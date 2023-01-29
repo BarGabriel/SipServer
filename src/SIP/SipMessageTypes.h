@@ -7,7 +7,6 @@ public:
 	SipMessageTypes() = delete;
 
 	static constexpr auto REGISTER           = "REGISTER";
-	static constexpr auto SUBSCRIBE          = "SUBSCRIBE";
 	static constexpr auto INVITE             = "INVITE";
 	static constexpr auto CANCEL             = "CANCEL";
 	static constexpr auto REQUEST_TERMINATED = "SIP/2.0 487 Request Terminated";

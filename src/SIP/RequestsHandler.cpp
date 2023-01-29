@@ -15,7 +15,6 @@ RequestsHandler::RequestsHandler(std::string serverIp, int serverPort,
 void RequestsHandler::initHandlers()
 {
 	_handlers.emplace(SipMessageTypes::REGISTER, std::bind(&RequestsHandler::OnRegister, this, std::placeholders::_1));
-	_handlers.emplace(SipMessageTypes::SUBSCRIBE, std::bind(&RequestsHandler::OnSubscribe, this, std::placeholders::_1));
 	_handlers.emplace(SipMessageTypes::CANCEL, std::bind(&RequestsHandler::OnCancel, this, std::placeholders::_1));
 	_handlers.emplace(SipMessageTypes::INVITE, std::bind(&RequestsHandler::OnInvite, this, std::placeholders::_1));
 	_handlers.emplace(SipMessageTypes::TRYING, std::bind(&RequestsHandler::OnTrying, this, std::placeholders::_1));
@@ -48,9 +47,9 @@ std::optional<std::shared_ptr<Session>> RequestsHandler::getSession(const std::s
 
 void RequestsHandler::OnRegister(std::shared_ptr<SipMessage> data)
 {
-	bool isUnregister = data->getContact().find("expires=0") != -1;
+	bool isUnregisterReq = data->getContact().find("expires=0") != -1;
 
-	if (!isUnregister)
+	if (!isUnregisterReq)
 	{
 		auto newClient = std::make_shared<SipClient>(data->getFromNumber(), data->getSource());
 		registerClient(std::move(newClient));
@@ -63,34 +62,16 @@ void RequestsHandler::OnRegister(std::shared_ptr<SipMessage> data)
 	response->setContact("Contact: <sip:" + data->getFromNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
 	endHandle(response->getFromNumber(), response);
 
-	if (isUnregister)
+	if (isUnregisterReq)
 	{
 		auto newClient = std::make_shared<SipClient>(data->getFromNumber(), data->getSource());
 		unregisterClient(std::move(newClient));
 	}
 }
 
-void RequestsHandler::OnSubscribe(std::shared_ptr<SipMessage> data)
-{
-	std::ostringstream okResponse;
-	okResponse << "SIP/2.0 200 OK\r\n"
-		<< data->getVia() << ";received=" + _serverIp << "\r\n"
-		<< data->getFrom() << "\r\n"
-		<< data->getTo() << ";tag=" << IDGen::GenerateID(9) << "\r\n"
-		<< data->getCallID() << "\r\n"
-		<< data->getCSeq() << "\r\n"
-		<< data->getContact() << "\r\n"
-		<< "Server: Sip server" << "\r\n"
-		<< data->getContentLength() << "\r\n"
-		<< "\r\n";
-
-	auto response = std::make_shared<SipMessage>(okResponse.str(), data->getSource());
-	endHandle(data->getFromNumber(), std::move(response));
-}
-
 void RequestsHandler::OnCancel(std::shared_ptr<SipMessage> data)
 {
-	endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), data->getFromNumber() + " canceled the session.");
+	setCallState(data->getCallID(), Session::State::Cancel);
 	endHandle(data->getToNumber(), data);
 }
 
@@ -103,7 +84,7 @@ void RequestsHandler::OnInvite(std::shared_ptr<SipMessage> data)
 {
 	// Check if the caller is registered
 	auto caller = findClient(data->getFromNumber());
-	if (!caller.has_value()) 
+	if (!caller.has_value())
 	{
 		return;
 	}
@@ -130,31 +111,29 @@ void RequestsHandler::OnInvite(std::shared_ptr<SipMessage> data)
 
 void RequestsHandler::OnTrying(std::shared_ptr<SipMessage> data)
 {
-	setCallState(data->getCallID(), Session::State::Trying);
 	endHandle(data->getFromNumber(), data);
 }
 
 void RequestsHandler::OnRinging(std::shared_ptr<SipMessage> data)
 {
-	setCallState(data->getCallID(), Session::State::Ringing);
 	endHandle(data->getFromNumber(), data);
 }
 
 void RequestsHandler::OnBusy(std::shared_ptr<SipMessage> data)
 {
-	endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), data->getToNumber() + " is busy");
+	setCallState(data->getCallID(), Session::State::Busy);
 	endHandle(data->getFromNumber(), data);
 }
 
 void RequestsHandler::OnUnavailable(std::shared_ptr<SipMessage> data)
 {
-	endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), data->getToNumber() + " is unavailable");
+	setCallState(data->getCallID(), Session::State::Unavailable);
 	endHandle(data->getFromNumber(), data);
 }
 
 void RequestsHandler::OnBye(std::shared_ptr<SipMessage> data)
 {
-	endCall(data->getCallID(), data->getToNumber(), data->getFromNumber());
+	setCallState(data->getCallID(), Session::State::Bye);
 	endHandle(data->getToNumber(), data);
 }
 
@@ -163,33 +142,66 @@ void RequestsHandler::OnOk(std::shared_ptr<SipMessage> data)
 	auto session = getSession(data->getCallID());
 	if (session.has_value())
 	{
-		auto sdpMessage = dynamic_cast<SipSdpMessage*>(data.get());
-		auto client = findClient(data->getToNumber());
-		if (!client.has_value()) return;
-		session->get()->setDest(client.value(), sdpMessage->getRtpPort());
-		session->get()->setState(Session::State::Connected);
-	}
+		if (session.value()->getState() == Session::State::Cancel)
+		{
+			endHandle(data->getFromNumber(), data);
+			return;
+		}
 
-	auto response = data;
-	if (data->getCSeq().find(SipMessageTypes::INVITE) != std::string::npos)
-	{
-		response->setContact("Contact: <sip:" + data->getToNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
+		if (data->getCSeq().find(SipMessageTypes::INVITE) != std::string::npos) 
+		{
+			auto client = findClient(data->getToNumber());
+			if (!client.has_value())
+			{
+				return;
+			}
+
+			auto sdpMessage = dynamic_cast<SipSdpMessage*>(data.get());
+			session->get()->setDest(client.value(), sdpMessage->getRtpPort());
+			session->get()->setState(Session::State::Connected);
+			auto response = data;
+			response->setContact("Contact: <sip:" + data->getToNumber() + "@" + _serverIp + ":" + std::to_string(_serverPort) + ";transport=UDP>");
+			endHandle(data->getFromNumber(), std::move(response));
+			return;
+		}
+
+		if (session.value()->getState() == Session::State::Bye)
+		{
+			endHandle(data->getFromNumber(), data);
+			endCall(data->getCallID(), data->getToNumber(), data->getFromNumber());
+		}
 	}
-	endHandle(data->getFromNumber(), std::move(response));
 }
 
 void RequestsHandler::OnAck(std::shared_ptr<SipMessage> data)
 {
 	auto session = getSession(data->getCallID());
-	if (!session.has_value()) 
+	if (!session.has_value())
 	{
 		return;
 	}
 
-	if (session.value()->getState() == Session::State::Connected)
+	endHandle(data->getToNumber(), data);
+
+	auto sessionState = session.value()->getState();
+	std::string endReason;
+	if (sessionState == Session::State::Busy)
 	{
-		endHandle(data->getToNumber(), data);
-	}	
+		endReason = data->getToNumber() + " is busy.";
+		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+	}
+
+	if (sessionState == Session::State::Unavailable)
+	{
+		endReason = data->getToNumber() + " is unavailable.";
+		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+	}
+
+	if (sessionState == Session::State::Cancel)
+	{
+		endReason = data->getFromNumber() + " canceled the session.";
+		endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), endReason);
+	}
 }
 
 bool RequestsHandler::setCallState(const std::string& callID, Session::State state)
@@ -246,7 +258,7 @@ std::optional<std::shared_ptr<SipClient>> RequestsHandler::findClient(const std:
 }
 
 void RequestsHandler::endHandle(const std::string& destNumber, std::shared_ptr<SipMessage> message)
-{	
+{
 	auto destClient = findClient(destNumber);
 	if (destClient.has_value())
 	{
