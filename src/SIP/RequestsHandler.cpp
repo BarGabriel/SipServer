@@ -100,8 +100,14 @@ void RequestsHandler::OnInvite(std::shared_ptr<SipMessage> data)
 		return;
 	}
 
-	auto messge = dynamic_cast<SipSdpMessage*>(data.get());
-	auto newSession = std::make_shared<Session>(data->getCallID(), caller.value(), messge->getRtpPort());
+	auto message = dynamic_cast<SipSdpMessage*>(data.get());
+	if (!message) 
+	{
+		std::cerr << "Couldn't get SDP from " << data->getFromNumber() << "'s INVITE request." << std::endl;
+		return;
+	}
+
+	auto newSession = std::make_shared<Session>(data->getCallID(), caller.value(), message->getRtpPort());
 	_sessions.emplace(data->getCallID(), newSession);
 
 	auto response = data;
@@ -157,6 +163,12 @@ void RequestsHandler::OnOk(std::shared_ptr<SipMessage> data)
 			}
 
 			auto sdpMessage = dynamic_cast<SipSdpMessage*>(data.get());
+			if (!sdpMessage) 
+			{
+				std::cerr << "Coudn't get SDP from: " << client.value()->getNumber() << "'s OK message.";
+				endCall(data->getCallID(), data->getFromNumber(), data->getToNumber(), "SDP parse error.");
+				return;
+			}
 			session->get()->setDest(client.value(), sdpMessage->getRtpPort());
 			session->get()->setState(Session::State::Connected);
 			auto response = data;
