@@ -1,6 +1,14 @@
 #include <iostream>
+#include <unistd.h>
+#include <stdlib.h>
+#include <signal.h>
 #include "SipServer.hpp"
 #include "cxxopts.hpp"
+
+void signal_handler(int s){
+         printf("Caught signal %d\n",s);
+         exit(1); 
+}
 
 int main(int argc, char** argv)
 {
@@ -19,17 +27,25 @@ int main(int argc, char** argv)
 		exit(0);
 	}
 
+	// Register signal and signal handler
+	struct sigaction sigIntHandler;
+	sigIntHandler.sa_handler = signal_handler;
+	sigemptyset(&sigIntHandler.sa_mask);
+	sigIntHandler.sa_flags = 0;
+	sigaction(SIGINT, &sigIntHandler, NULL);
+
 	try
 	{
 		std::string ip = result["ip"].as<std::string>();
 		int port = result["port"].as<int>();
 		SipServer server(std::move(ip), port);
 		std::cout << "Server has been started. Listening..." << std::endl;
-		getchar();
+		pause();
 	}
 	catch (const cxxopts::OptionException&)
 	{
 		std::cout << "Please enter ip and port." << std::endl;
 	}
-	return 0;
+
+   	return 0;
 }
