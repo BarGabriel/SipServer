@@ -50,6 +50,7 @@ void UdpServer::startReceive()
 
 			while (_keepRunning)
 			{
+				std::memset(&senderEndPoint, 0, sizeof(senderEndPoint));
 #ifdef __linux__
 				recvfrom(_sockfd, buffer, BUFFER_SIZE, 0, reinterpret_cast<struct sockaddr*>(&senderEndPoint), (socklen_t*)&len);
 #elif defined _WIN32 || defined _WIN64
