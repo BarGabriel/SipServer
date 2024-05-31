@@ -7,7 +7,7 @@
 UdpServer::UdpServer(std::string ip, int port, OnNewMessageEvent event) : _ip(std::move(ip)), _port(port), _onNewMessageEvent(event), _keepRunning(false)
 {
 
-#ifdef _WIN32 || defined _WIN64
+#if defined _WIN32 || defined _WIN64
 	WSADATA wsa;
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
